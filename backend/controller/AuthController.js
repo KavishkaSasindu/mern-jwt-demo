@@ -1,6 +1,14 @@
 const UserModel = require("../models/UserModel");
+const jwt = require("jsonwebtoken");
 
 const bcrypt = require("bcrypt");
+
+// create token
+const createToken = (id) => {
+  return jwt.sign({ id }, "create token", {
+    expiresIn: 3 * 24 * 60 * 60,
+  });
+};
 
 // get request signUp
 const getSignUp = (request, response) => {
@@ -24,9 +32,14 @@ const postSignUp = async (request, response) => {
     });
 
     if (postData) {
+      const token = createToken(postData._id);
+      const cookie = response.cookie("jwt", token, {
+        maxAge: 1000 * 60 * 60 * 24,
+      });
       return response.status(201).json({
         message: "User created",
         data: request.body,
+        cookie: token,
       });
     } else {
       return response.status(400).json({
